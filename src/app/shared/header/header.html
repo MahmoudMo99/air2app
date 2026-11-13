@@ -1,0 +1,212 @@
+<header
+  class="a2a-header"
+  id="top"
+  [class.is-scrolled]="isScrolled()"
+  [class.menu-open]="menuOpen()"
+>
+  <div class="a2a-header-inner">
+    <a class="a2a-identity" href="#top" aria-label="Air2App — back to top" (click)="goTop($event)">
+      <span class="a2a-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="7" cy="30" r="3.5" fill="currentColor" />
+          <path
+            d="M7 30C15 11 23 12 27 25C31 38 38 30 42 16"
+            stroke="currentColor"
+            stroke-width="3.5"
+            stroke-linecap="round"
+          />
+          <circle cx="42" cy="16" r="5" fill="currentColor" />
+        </svg>
+      </span>
+
+      <span class="a2a-brand-copy">
+        <span class="a2a-brand-title"> air2app<span>.</span> </span>
+        <span class="a2a-brand-caption"> INTERACTIVE CANVAS </span>
+      </span>
+    </a>
+
+    <nav class="a2a-desktop-nav" aria-label="Primary navigation">
+      @for (item of navigation; track item.id) {
+        <a
+          class="a2a-nav-link"
+          [href]="'#' + item.id"
+          [class.active]="activeSection() === item.id"
+          [attr.aria-current]="activeSection() === item.id ? 'location' : null"
+          (click)="navigateTo(item.id)"
+        >
+          <span class="a2a-nav-index">{{ item.number }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="a2a-header-tools">
+      <button
+        class="a2a-theme-toggle"
+        type="button"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.mode() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.title]="theme.mode() === 'dark' ? 'Light mode' : 'Dark mode'"
+      >
+        @if (theme.mode() === 'dark') {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
+            />
+          </svg>
+        } @else {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20.4 15.3A8.7 8.7 0 0 1 8.7 3.6a8.7 8.7 0 1 0 11.7 11.7Z" />
+          </svg>
+        }
+      </button>
+
+      <a class="a2a-launch" href="#studio" (click)="navigateTo('studio')">
+        <span>Open studio</span>
+
+        <span class="a2a-launch-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 19 19 5M8 5h11v11" />
+          </svg>
+        </span>
+      </a>
+
+      <button
+        #menuButton
+        class="a2a-menu-toggle"
+        type="button"
+        aria-controls="mobile-navigation"
+        [attr.aria-expanded]="menuOpen()"
+        [attr.aria-label]="menuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
+        (click)="toggleMenu()"
+      >
+        @if (menuOpen()) {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M5 5 19 19M19 5 5 19" />
+          </svg>
+        } @else {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M4 8h16M4 16h16" />
+          </svg>
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (menuOpen()) {
+    <button
+      class="a2a-menu-backdrop"
+      type="button"
+      tabindex="-1"
+      aria-label="Close navigation menu"
+      (click)="closeMenu()"
+    ></button>
+
+    <div
+      #mobilePanel
+      class="a2a-mobile-panel"
+      id="mobile-navigation"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Air2App navigation menu"
+    >
+      <div class="a2a-mobile-top">
+        <span>EXPLORE AIR2APP</span>
+        <span class="a2a-mobile-edition">01 / 03</span>
+      </div>
+
+      <nav class="a2a-mobile-nav" aria-label="Mobile navigation">
+        @for (item of navigation; track item.id) {
+          <a
+            class="a2a-mobile-link"
+            [href]="'#' + item.id"
+            [class.active]="activeSection() === item.id"
+            [attr.aria-current]="activeSection() === item.id ? 'location' : null"
+            (click)="navigateTo(item.id)"
+          >
+            <span class="a2a-mobile-number">
+              {{ item.number }}
+            </span>
+
+            <span class="a2a-mobile-title">
+              {{ item.label }}
+            </span>
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 19 19 5M8 5h11v11" />
+            </svg>
+          </a>
+        }
+      </nav>
+
+      <a class="a2a-mobile-launch" href="#studio" (click)="navigateTo('studio')">
+        <span>Enter the studio</span>
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 19 19 5M8 5h11v11" />
+        </svg>
+      </a>
+
+      <div class="a2a-mobile-signature">
+        <span class="a2a-signature-dot"></span>
+
+        <span>DRAW / SHAPE / MOVE</span>
+
+        <span class="a2a-signature-mark" aria-hidden="true"> ✳ </span>
+      </div>
+    </div>
+  }
+</header>

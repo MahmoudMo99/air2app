@@ -1,0 +1,829 @@
+<section
+  class="studio"
+  id="studio"
+  aria-labelledby="studio-title"
+  [class.fullscreen-fallback-active]="isFullscreenFallback()"
+>
+  <div class="studio-container">
+    <div class="studio-heading">
+      <div class="studio-heading-copy">
+        <div class="studio-eyebrow">THE INTERACTIVE STUDIO</div>
+
+        <h2 id="studio-title">Your space to <span>create.</span></h2>
+      </div>
+
+      <p class="studio-heading-description">
+        Make something move. Draw with your hands, shape your ideas, or jump straight in with the
+        no-camera demo.
+      </p>
+    </div>
+
+    <div class="studio-layout">
+      <div #stageShell class="stage-shell" [class.is-fullscreen-fallback]="isFullscreenFallback()">
+        <div class="stage-topbar">
+          <div class="stage-identity">
+            <span class="stage-identity-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <circle cx="7" cy="30" r="3.5" fill="currentColor" />
+                <path
+                  d="M7 30C15 11 23 12 27 25C31 38 38 30 42 16"
+                  stroke="currentColor"
+                  stroke-width="3.5"
+                  stroke-linecap="round"
+                />
+                <circle cx="42" cy="16" r="5" fill="currentColor" />
+              </svg>
+            </span>
+
+            <span class="stage-identity-copy">
+              <strong>Air2App Studio</strong>
+              <small>THE MOTION CANVAS</small>
+            </span>
+          </div>
+
+          <div class="stage-topbar-actions">
+            <div
+              class="camera-status"
+              [class.is-online]="isActive()"
+              [class.is-connecting]="isLoading()"
+              [attr.aria-label]="
+                isLoading()
+                  ? 'Camera connecting'
+                  : isDemo()
+                    ? 'Interactive demo active'
+                    : isRunning()
+                      ? 'Camera session active'
+                      : 'Camera session inactive'
+              "
+            >
+              <span class="camera-status-dot" aria-hidden="true"></span>
+              <span>
+                {{
+                  isLoading()
+                    ? 'CONNECTING'
+                    : isDemo()
+                      ? 'DEMO ACTIVE'
+                      : isRunning()
+                        ? 'CAMERA LIVE'
+                        : 'STUDIO READY'
+                }}
+              </span>
+            </div>
+
+            @if (isFullscreen() && isActive()) {
+              <button
+                class="stage-quick-clear"
+                type="button"
+                (click)="clearDrawing()"
+                [disabled]="!isDemo() && strokeCount() === 0 && !isPinching()"
+                [attr.aria-label]="isDemo() ? 'Reset demo scene' : 'Clear canvas'"
+                [attr.title]="isDemo() ? 'Reset demo scene' : 'Clear canvas'"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 11a9 9 0 1 1 2.4 6.2M3 4v7h7" />
+                </svg>
+                <span>{{ isDemo() ? 'Reset' : 'Clear' }}</span>
+              </button>
+            }
+
+            <button
+              class="fullscreen-toggle"
+              type="button"
+              (click)="toggleFullscreen()"
+              [attr.aria-label]="isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+              [attr.title]="isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+              [attr.aria-pressed]="isFullscreen()"
+            >
+              @if (isFullscreen()) {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 3v5H3M16 3v5h5M3 16h5v5M21 16h-5v5" />
+                </svg>
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5" />
+                </svg>
+              }
+            </button>
+
+            @if (isActive()) {
+              <button
+                class="end-session"
+                type="button"
+                (click)="endSession()"
+                [attr.aria-label]="
+                  isDemo() ? 'Exit interactive demo' : 'End session and turn off camera'
+                "
+                [attr.title]="isDemo() ? 'Exit demo' : 'End camera session'"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 6 18 18M18 6 6 18" />
+                </svg>
+                <span>{{ isDemo() ? 'Exit demo' : 'End session' }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div #cameraSurface class="camera-surface" [class.is-demo]="isDemo()">
+          <video #camera autoplay playsinline muted aria-hidden="true"></video>
+          <canvas #drawingCanvas class="drawing-layer" aria-label="Air drawing canvas"></canvas>
+          <canvas #overlay class="tracking-layer" aria-hidden="true"></canvas>
+
+          @if (isDemo()) {
+            <app-demo-stage [class.is-dragging]="isDragging()" (interactionEnded)="wakePhysics()" />
+          }
+
+          @if (isActive()) {
+            <app-scene-effects
+              [referenceCanvas]="isRunning() ? drawingCanvas : null"
+              [mirrored]="isRunning()"
+              [ambientEnabled]="!physicsEnabled() && (isDemo() || !isPinching())"
+              [physicsActive]="
+                physicsEnabled() &&
+                physicsAwake() &&
+                !isPinching() &&
+                !isDragging() &&
+                !waitingForRelease()
+              "
+              (sceneFrame)="refreshLivingScene()"
+              (physicsFrame)="advancePhysics($event)"
+            />
+          }
+
+          @if (isRunning()) {
+            <div class="studio-mode-switch" role="group" aria-label="Studio interaction mode">
+              <button
+                type="button"
+                class="mode-option"
+                [class.is-active]="interactionMode() === 'draw'"
+                [attr.aria-pressed]="interactionMode() === 'draw'"
+                (click)="setMode('draw')"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m15 5 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10L4 20Z" />
+                </svg>
+                Draw
+              </button>
+
+              <button
+                type="button"
+                class="mode-option"
+                [class.is-active]="interactionMode() === 'interact'"
+                [attr.aria-pressed]="interactionMode() === 'interact'"
+                (click)="setMode('interact')"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 3v16l4.5-4.5 3.2 6.5 3.1-1.5-3.2-6.3H19L5 3Z" />
+                </svg>
+                Interact
+              </button>
+            </div>
+          }
+
+          @if (isRunning() && interactionMode() === 'interact') {
+            <app-interaction-guide
+              [objectCount]="sceneCount()"
+              [pinching]="isPinching()"
+              [dragging]="isDragging()"
+              [awaitingRelease]="waitingForRelease()"
+              [completedOnce]="hasTransformedObject()"
+              [tool]="interactionTool()"
+            />
+          }
+
+          @if (!isActive()) {
+            <div class="stage-placeholder">
+              <div class="placeholder-art" aria-hidden="true">
+                <svg viewBox="0 0 500 230" fill="none">
+                  <defs>
+                    <linearGradient
+                      id="studio-art-gesture"
+                      x1="65"
+                      y1="164"
+                      x2="285"
+                      y2="67"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop stop-color="#52F5D0" stop-opacity="0" />
+                      <stop offset="0.44" stop-color="#52F5D0" stop-opacity="0.95" />
+                      <stop offset="1" stop-color="#C4FFF1" />
+                    </linearGradient>
+                    <linearGradient
+                      id="studio-art-object"
+                      x1="298"
+                      y1="48"
+                      x2="420"
+                      y2="180"
+                      gradientUnits="userSpaceOnUse"
+                    >
+                      <stop stop-color="#ABC0FF" />
+                      <stop offset="1" stop-color="#5474FF" />
+                    </linearGradient>
+                  </defs>
+                  <circle
+                    cx="270"
+                    cy="114"
+                    r="108"
+                    stroke="#526476"
+                    stroke-opacity="0.25"
+                    stroke-dasharray="3 9"
+                  />
+                  <circle cx="270" cy="114" r="74" stroke="#526476" stroke-opacity="0.17" />
+                  <path
+                    class="placeholder-trail"
+                    d="M37 169C85 192 91 105 143 129S199 167 231 104S261 73 282 80"
+                    stroke="url(#studio-art-gesture)"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="282"
+                    cy="80"
+                    r="25"
+                    fill="#52F5D0"
+                    fill-opacity="0.07"
+                    stroke="#52F5D0"
+                    stroke-opacity="0.4"
+                  />
+                  <circle
+                    cx="282"
+                    cy="80"
+                    r="12"
+                    fill="#52F5D0"
+                    fill-opacity="0.15"
+                    stroke="#52F5D0"
+                    stroke-width="1.5"
+                  />
+                  <circle cx="282" cy="80" r="4" fill="#C4FFF1" />
+                  <g class="placeholder-geometry">
+                    <rect
+                      x="325"
+                      y="67"
+                      width="102"
+                      height="102"
+                      rx="16"
+                      stroke="url(#studio-art-object)"
+                      stroke-width="3"
+                      fill="#5474FF"
+                      fill-opacity="0.07"
+                      transform="rotate(-13 376 118)"
+                    />
+                    <circle
+                      cx="409"
+                      cy="61"
+                      r="21"
+                      stroke="#52F5D0"
+                      stroke-width="2"
+                      fill="#52F5D0"
+                      fill-opacity="0.06"
+                    />
+                  </g>
+                  <path
+                    d="M53 64h21M63.5 53.5v21M450 165h21M460.5 154.5v21"
+                    stroke="#71869A"
+                    stroke-linecap="round"
+                    stroke-opacity="0.7"
+                  />
+                  <circle cx="183" cy="38" r="2" fill="#52F5D0" fill-opacity="0.7" />
+                  <circle cx="443" cy="35" r="2" fill="#9AADFF" fill-opacity="0.7" />
+                </svg>
+              </div>
+
+              <div class="placeholder-content">
+                <div class="placeholder-eyebrow">
+                  <span class="placeholder-eyebrow-dot" aria-hidden="true"></span>
+                  YOUR CREATIVE SPACE IS READY
+                </div>
+
+                <h3>Make something <span>move.</span></h3>
+
+                <p>
+                  Start drawing with your hands, or explore shapes with a mouse or touch — no camera
+                  required.
+                </p>
+
+                <div class="placeholder-actions">
+                  <button
+                    class="start-camera"
+                    type="button"
+                    (click)="startCamera()"
+                    [disabled]="isLoading()"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="6" width="14" height="12" rx="3" />
+                      <path d="m17 10 4-2v8l-4-2" />
+                    </svg>
+                    <span>{{ isLoading() ? 'Connecting camera…' : 'Enable camera' }}</span>
+                    @if (isLoading()) {
+                      <span class="button-spinner" aria-hidden="true"></span>
+                    }
+                  </button>
+
+                  <button
+                    class="try-demo"
+                    type="button"
+                    (click)="startDemo()"
+                    [disabled]="isLoading()"
+                  >
+                    <span>Try the demo</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 19 19 5M8 5h11v11" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="camera-note">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="4" y="10" width="16" height="11" rx="2" />
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  </svg>
+                  Camera access is requested only when you choose to enable it.
+                </div>
+
+                @if (error()) {
+                  <p class="studio-error" role="alert">{{ error() }}</p>
+                }
+              </div>
+            </div>
+          } @else if (isRunning()) {
+            <div class="live-overlay">
+              <div class="live-tracking">
+                <span
+                  class="tracking-light"
+                  [class.detected]="handCount() > 0"
+                  aria-hidden="true"
+                ></span>
+                {{ handCount() > 0 ? 'HAND DETECTED' : 'SHOW YOUR HAND' }}
+              </div>
+
+              <div
+                class="gesture-indicator"
+                [class.is-drawing]="
+                  interactionMode() === 'draw' && isPinching() && !waitingForRelease()
+                "
+                [class.is-interacting]="interactionMode() === 'interact' && isDragging()"
+              >
+                <span class="gesture-light" aria-hidden="true"></span>
+                @if (waitingForRelease()) {
+                  RELEASE TO CONTINUE
+                } @else if (interactionMode() === 'draw') {
+                  {{ isPinching() ? 'DRAWING IN PROGRESS' : 'PINCH TO DRAW' }}
+                } @else {
+                  {{
+                    isDragging()
+                      ? interactionTool() === 'scale'
+                        ? 'SCALING OBJECT'
+                        : interactionTool() === 'rotate'
+                          ? 'ROTATING OBJECT'
+                          : 'MOVING OBJECT'
+                      : isPinching()
+                        ? 'NO OBJECT SELECTED'
+                        : 'PINCH AN OBJECT'
+                  }}
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div
+          #stageFooter
+          class="stage-footer"
+          [class.has-transform-tools]="isActive() && interactionMode() === 'interact'"
+        >
+          <div class="stage-hint">
+            <span class="hint-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 4v16m-6-6 6 6 6-6" />
+              </svg>
+            </span>
+            <span>
+              @if (!isActive()) {
+                Choose camera drawing or explore the interactive demo
+              } @else if (isDemo()) {
+                @if (interactionTool() === 'scale') {
+                  Drag a shape up to grow or down to shrink
+                } @else if (interactionTool() === 'rotate') {
+                  Drag a shape sideways to rotate it
+                } @else {
+                  Click and drag a shape to move it
+                }
+              } @else if (waitingForRelease()) {
+                Release your fingers to continue
+              } @else if (interactionMode() === 'draw') {
+                Pinch to draw · Release to finish
+              } @else if (interactionTool() === 'scale') {
+                Pinch a shape · Move up to grow, down to shrink
+              } @else if (interactionTool() === 'rotate') {
+                Pinch a shape · Move sideways to rotate
+              } @else {
+                Pinch a shape · Move your hand · Release
+              }
+            </span>
+          </div>
+
+          <div class="stage-footer-actions">
+            @if (isActive()) {
+              <button
+                type="button"
+                class="physics-toggle"
+                [class.is-active]="physicsEnabled()"
+                [attr.aria-pressed]="physicsEnabled()"
+                (click)="togglePhysics()"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="5" r="3" />
+                  <path d="M12 8v9M8 13l4 4 4-4M4 21h16" />
+                </svg>
+                <span
+                  >Physics <strong>{{ physicsEnabled() ? 'On' : 'Off' }}</strong></span
+                >
+              </button>
+            }
+
+            @if (isActive() && interactionMode() === 'interact') {
+              <div class="transform-tools" role="group" aria-label="Object transform tool">
+                <button
+                  type="button"
+                  class="transform-tool"
+                  [class.is-active]="interactionTool() === 'move'"
+                  [attr.aria-pressed]="interactionTool() === 'move'"
+                  (click)="setInteractionTool('move')"
+                >
+                  Move
+                </button>
+                <button
+                  type="button"
+                  class="transform-tool"
+                  [class.is-active]="interactionTool() === 'scale'"
+                  [attr.aria-pressed]="interactionTool() === 'scale'"
+                  (click)="setInteractionTool('scale')"
+                >
+                  Scale
+                </button>
+                <button
+                  type="button"
+                  class="transform-tool"
+                  [class.is-active]="interactionTool() === 'rotate'"
+                  [attr.aria-pressed]="interactionTool() === 'rotate'"
+                  (click)="setInteractionTool('rotate')"
+                >
+                  Rotate
+                </button>
+              </div>
+            }
+
+            @if (isFullscreen()) {
+              <div class="fullscreen-stats">
+                <span>{{ sceneCount() }} objects</span>
+                <span class="stats-separator" aria-hidden="true"></span>
+                <span>
+                  @if (interactionMode() === 'interact' && selectedObject()) {
+                    {{ selectedObject()!.kind }} selected
+                  } @else {
+                    {{ lastShape() }}
+                  }
+                </span>
+              </div>
+            } @else if (!isDemo() && interactionMode() === 'draw') {
+              <span class="stage-engine">POWERED BY MEDIAPIPE</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <aside class="control-panel" aria-label="Studio control panel">
+        <div class="panel-topline">
+          <span>THE CONTROL DECK</span>
+        </div>
+
+        <div class="panel-intro">
+          <span class="panel-intro-label">
+            <span aria-hidden="true"></span>
+            {{
+              isDemo() ? 'EXPLORATION MODE' : isRunning() ? 'CREATION MODE' : 'READY WHEN YOU ARE'
+            }}
+          </span>
+
+          <h3>Shape your <span>world.</span></h3>
+
+          <p>
+            @if (isDemo()) {
+              Three shapes, three ways to interact. Explore freely without a camera.
+            } @else if (interactionMode() === 'draw') {
+              Draw in the air, then watch your sketches take shape.
+            } @else {
+              Grab an object with a pinch to move, scale, or rotate it.
+            }
+          </p>
+        </div>
+
+        <div class="session-metrics" aria-label="Current session metrics">
+          <div class="metric-strokes">
+            <span class="metric-label">{{ isDemo() ? 'SCENE OBJECTS' : 'STROKES DRAWN' }}</span>
+            <strong>{{ isDemo() ? sceneCount() : strokeCount() }}</strong>
+          </div>
+
+          <div class="metric-shape">
+            <span class="metric-label">{{ isDemo() ? 'SELECTED SHAPE' : 'LAST SHAPE' }}</span>
+            <strong>{{ isDemo() ? (selectedObject()?.kind ?? 'None') : lastShape() }}</strong>
+          </div>
+        </div>
+
+        <div class="tracking-details">
+          <div class="panel-section-heading">
+            <span>SESSION OVERVIEW</span>
+            <span class="section-rule" aria-hidden="true"></span>
+          </div>
+
+          @if (isDemo()) {
+            <div class="tracking-row">
+              <span>Input</span>
+              <strong class="is-positive">Mouse / touch</strong>
+            </div>
+            <div class="tracking-row">
+              <span>Camera</span>
+              <strong>Not required</strong>
+            </div>
+          } @else {
+            <div class="tracking-row">
+              <span>Hand tracking</span>
+              <strong [class.is-positive]="handCount() > 0">
+                {{ handCount() > 0 ? 'Detected' : isRunning() ? 'Waiting' : 'Inactive' }}
+              </strong>
+            </div>
+          }
+
+          <div class="tracking-row">
+            <span>Current mode</span>
+            <strong>{{
+              isDemo() ? 'Demo' : interactionMode() === 'draw' ? 'Draw' : 'Interact'
+            }}</strong>
+          </div>
+
+          <div class="tracking-row">
+            <span>Scene objects</span>
+            <strong>{{ sceneCount() }}</strong>
+          </div>
+
+          @if (isActive()) {
+            <div class="tracking-row">
+              <span>Physics</span>
+              <strong [class.is-positive]="physicsEnabled()">
+                {{ physicsEnabled() ? 'Enabled' : 'Off' }}
+              </strong>
+            </div>
+          }
+
+          @if (isDemo() || interactionMode() === 'interact') {
+            <div class="tracking-row">
+              <span>Selection</span>
+              <strong [class.is-positive]="selectedObject()">
+                {{ selectedObject()?.kind ?? 'None' }}
+              </strong>
+            </div>
+          }
+
+          @if (!isDemo()) {
+            <div class="tracking-row">
+              <span>Gesture</span>
+              <strong [class.is-positive]="isPinching() || isDragging()">
+                {{
+                  waitingForRelease()
+                    ? 'Release hand'
+                    : isDragging()
+                      ? 'Dragging'
+                      : isPinching()
+                        ? 'Pinching'
+                        : isRunning()
+                          ? 'Ready'
+                          : 'Inactive'
+                }}
+              </strong>
+            </div>
+          }
+        </div>
+
+        <div class="gesture-guide">
+          <div class="panel-section-heading">
+            <span>{{
+              isDemo()
+                ? 'HOW TO EXPLORE'
+                : interactionMode() === 'draw'
+                  ? 'HOW TO DRAW'
+                  : 'HOW TO INTERACT'
+            }}</span>
+            <span class="section-rule" aria-hidden="true"></span>
+          </div>
+
+          <ol class="guide-steps">
+            @if (isDemo()) {
+              <li>
+                <span class="step-number">01</span>
+                <div>
+                  <strong>Pick a tool</strong>
+                  <p>Move, Scale, or Rotate.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">02</span>
+                <div>
+                  <strong>Select a shape</strong>
+                  <p>Click or touch an object.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">03</span>
+                <div>
+                  <strong>Make your move</strong>
+                  <p>
+                    {{
+                      interactionTool() === 'scale'
+                        ? 'Drag up or down to resize.'
+                        : interactionTool() === 'rotate'
+                          ? 'Drag sideways to rotate.'
+                          : 'Drag to reposition it.'
+                    }}
+                  </p>
+                </div>
+              </li>
+            } @else if (interactionMode() === 'draw') {
+              <li>
+                <span class="step-number">01</span>
+                <div>
+                  <strong>Pinch</strong>
+                  <p>Bring thumb and index finger together.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">02</span>
+                <div>
+                  <strong>Draw</strong>
+                  <p>Move your hand to trace a shape.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">03</span>
+                <div>
+                  <strong>Release</strong>
+                  <p>Finish the stroke and see what you made.</p>
+                </div>
+              </li>
+            } @else {
+              <li>
+                <span class="step-number">01</span>
+                <div>
+                  <strong>Find a shape</strong>
+                  <p>Point at a shape on the canvas.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">02</span>
+                <div>
+                  <strong>Pinch to grab</strong>
+                  <p>Touch thumb and index finger.</p>
+                </div>
+              </li>
+              <li>
+                <span class="step-number">03</span>
+                <div>
+                  <strong>{{
+                    interactionTool() === 'scale'
+                      ? 'Resize'
+                      : interactionTool() === 'rotate'
+                        ? 'Rotate'
+                        : 'Move'
+                  }}</strong>
+                  <p>
+                    {{
+                      interactionTool() === 'scale'
+                        ? 'Move up or down to resize.'
+                        : interactionTool() === 'rotate'
+                          ? 'Move sideways to rotate.'
+                          : 'Move your hand, then release.'
+                    }}
+                  </p>
+                </div>
+              </li>
+            }
+          </ol>
+        </div>
+
+        <div class="panel-bottom">
+          <button
+            class="clear-button"
+            type="button"
+            (click)="clearDrawing()"
+            [disabled]="!isActive() || (!isDemo() && strokeCount() === 0 && !isPinching())"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 11a9 9 0 1 1 2.4 6.2M3 4v7h7" />
+            </svg>
+            <span>{{ isDemo() ? 'Reset demo scene' : 'Clear canvas' }}</span>
+          </button>
+          <p>
+            @if (isDemo()) {
+              Reset brings back the original shapes.
+            } @else {
+              Clearing removes your drawings. Ending the session turns off the camera.
+            }
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,18 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+
+@Component({
+  selector: 'app-footer',
+  imports: [],
+  templateUrl: './footer.html',
+  styleUrl: './footer.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class Footer {
+  readonly year = new Date().getFullYear();
+
+  readonly contact = {
+    portfolio: 'https://mahmoud-mohamed-portfolio.vercel.app/',
+    linkedin: 'https://www.linkedin.com/in/mahmoud-mo-mahmoud/',
+    github: 'https://github.com/MahmoudMo99',
+  };
+}

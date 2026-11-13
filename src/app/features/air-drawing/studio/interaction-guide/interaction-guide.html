@@ -1,0 +1,271 @@
+@if (isOpen()) {
+  <div
+    class="guide-card"
+    role="region"
+    aria-labelledby="interaction-guide-title"
+    [class.is-dragging]="phase() === 'dragging'"
+    [class.is-warning]="phase() === 'missed' || phase() === 'release'"
+  >
+    <div class="guide-header">
+      <div class="guide-brand">
+        <span class="guide-brand-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 17C8 17 8 7 13 7s5 10 7 3" />
+            <circle cx="20" cy="10" r="2" fill="currentColor" stroke="none" />
+          </svg>
+        </span>
+
+        <span class="guide-brand-copy">
+          <span>GESTURE ASSIST</span>
+          <small>AIR2APP / INTERACT</small>
+        </span>
+      </div>
+
+      <button
+        class="guide-close"
+        type="button"
+        aria-label="Hide interaction guide"
+        title="Hide guide"
+        (click)="close()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M6 6 18 18M18 6 6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="guide-body">
+      <div class="guide-status">
+        <span class="guide-status-icon" aria-hidden="true">
+          @if (phase() === 'dragging') {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 12h16M12 4v16" />
+              <path d="m7 7-3 5 3 5M17 7l3 5-3 5M7 7l5-3 5 3M7 17l5 3 5-3" />
+            </svg>
+          } @else if (phase() === 'empty') {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 8v8M8 12h8" />
+            </svg>
+          } @else if (phase() === 'missed' || phase() === 'release') {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 3v9" />
+              <path d="m7 8 5 5 5-5" />
+              <path d="M5 17a8 8 0 0 0 14 0" />
+            </svg>
+          } @else {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M8 12V6a2 2 0 0 1 4 0v5" />
+              <path d="M12 11V8a2 2 0 0 1 4 0v5" />
+              <path
+                d="M16 11a2 2 0 0 1 4 0v4c0 4-3 6-7 6h-2c-2 0-3.2-.7-4.3-2L4 15a2 2 0 0 1 3-2.6L9 15"
+              />
+            </svg>
+          }
+        </span>
+
+        <div class="guide-status-copy">
+          <span class="guide-phase">
+            <span class="guide-phase-dot" aria-hidden="true"></span>
+
+            @switch (phase()) {
+              @case ('empty') {
+                GET STARTED
+              }
+              @case ('release') {
+                RELEASE REQUIRED
+              }
+              @case ('missed') {
+                ADJUST YOUR AIM
+              }
+              @case ('dragging') {
+                OBJECT IN HAND
+              }
+              @default {
+                READY TO INTERACT
+              }
+            }
+          </span>
+
+          <h3 id="interaction-guide-title">
+            {{ heading() }}
+          </h3>
+        </div>
+      </div>
+
+      <p
+        class="guide-description"
+        [attr.aria-live]="phase() === 'release' || phase() === 'empty' ? 'polite' : 'off'"
+        aria-atomic="true"
+      >
+        {{ description() }}
+      </p>
+
+      @if (objectCount() > 0) {
+        <ol class="guide-steps" aria-label="Interaction steps">
+          <li
+            [class.is-current]="phase() === 'ready'"
+            [attr.aria-current]="phase() === 'ready' ? 'step' : null"
+          >
+            <span class="guide-step-number">01</span>
+            <span class="guide-step-name">Aim</span>
+          </li>
+
+          <li
+            [class.is-current]="phase() === 'missed'"
+            [attr.aria-current]="phase() === 'missed' ? 'step' : null"
+          >
+            <span class="guide-step-number">02</span>
+            <span class="guide-step-name">Pinch</span>
+          </li>
+
+          <li
+            [class.is-current]="phase() === 'dragging'"
+            [attr.aria-current]="phase() === 'dragging' ? 'step' : null"
+          >
+            <span class="guide-step-number">03</span>
+            <span class="guide-step-name">
+              @if (tool() === 'scale') {
+                Resize
+              } @else if (tool() === 'rotate') {
+                Rotate
+              } @else {
+                Move
+              }
+            </span>
+          </li>
+        </ol>
+      } @else {
+        <div class="guide-empty">
+          <span class="guide-empty-symbol" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m12 3 1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9L12 3Z" />
+            </svg>
+          </span>
+
+          <span> Create something in Draw mode, then come back to interact. </span>
+        </div>
+      }
+    </div>
+
+    <div class="guide-footer">
+      <span class="guide-tool">
+        TOOL /
+        @if (tool() === 'scale') {
+          SCALE
+        } @else if (tool() === 'rotate') {
+          ROTATE
+        } @else {
+          MOVE
+        }
+      </span>
+
+      <span class="guide-footer-state">
+        <span class="guide-footer-dot" aria-hidden="true"></span>
+
+        @switch (phase()) {
+          @case ('dragging') {
+            IN MOTION
+          }
+          @case ('missed') {
+            TRY AGAIN
+          }
+          @case ('release') {
+            WAITING
+          }
+          @case ('empty') {
+            NO SHAPES
+          }
+          @default {
+            READY
+          }
+        }
+      </span>
+    </div>
+  </div>
+} @else {
+  <button
+    class="guide-reopen"
+    type="button"
+    (click)="open()"
+    aria-label="Show interaction guide"
+    title="Show interaction guide"
+  >
+    <span class="guide-reopen-icon" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.1.9-1.7 1.4-1.7 2.7M12 17h.01" />
+      </svg>
+    </span>
+
+    <span>Interaction help</span>
+
+    <svg
+      class="guide-reopen-arrow"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 19 19 5M8 5h11v11" />
+    </svg>
+  </button>
+}

@@ -1,0 +1,413 @@
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-shell">
+      <div class="hero-layout">
+        <div class="hero-copy">
+          <div class="hero-intro">A NEW WAY TO CREATE</div>
+
+          <h1 id="hero-title">
+            <span class="hero-title-line">Make the air</span>
+            <span class="hero-title-line hero-title-accent">
+              your canvas<span class="hero-title-dot">.</span>
+            </span>
+          </h1>
+
+          <p class="hero-description">
+            Forget the usual tools. Draw in mid-air with your hand, turn sketches into shapes, and
+            bring them to life with movement.
+          </p>
+
+          <div class="hero-actions">
+            <a class="hero-primary" href="#studio">
+              <span>Enter the studio</span>
+
+              <span class="hero-primary-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M5 19 19 5M8 5h11v11" />
+                </svg>
+              </span>
+            </a>
+
+            <a class="hero-secondary" href="#process">
+              <span>Discover how it works</span>
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14m-6-6 6 6 6-6" />
+              </svg>
+            </a>
+          </div>
+
+          <div class="hero-access">
+            <span class="hero-access-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="4" y="7" width="16" height="12" rx="3" />
+                <path d="m9 7 1.2-2h3.6L15 7" />
+                <circle cx="12" cy="13" r="3" />
+              </svg>
+            </span>
+
+            <p>
+              Camera access is optional.
+              <span>Try the interactive demo without one.</span>
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="hero-showcase"
+          role="img"
+          aria-label="Illustration of a mint-colored hand gesture trail becoming a circle and a rotated geometric shape inside the Air2App canvas"
+        >
+          <div class="showcase-glow" aria-hidden="true"></div>
+
+          <div class="showcase-window">
+            <div class="showcase-topbar">
+              <div class="showcase-window-controls" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+
+              <div class="showcase-window-title">
+                <span class="showcase-window-symbol" aria-hidden="true">✳</span>
+                AIR2APP / MOTION CANVAS
+              </div>
+
+              <div class="showcase-preview-label">
+                <span></span>
+                PREVIEW
+              </div>
+            </div>
+
+            <div class="showcase-stage">
+              <div class="showcase-grid" aria-hidden="true"></div>
+
+              <div class="showcase-coordinate showcase-coordinate-top">
+                X / 048.21
+                <span>Y / 029.84</span>
+              </div>
+
+              <svg class="showcase-art" viewBox="0 0 620 480" fill="none" aria-hidden="true">
+                <defs>
+                  <linearGradient
+                    id="hero-gesture-gradient"
+                    x1="84"
+                    y1="323"
+                    x2="370"
+                    y2="148"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#52F5D0" stop-opacity="0" />
+                    <stop offset="0.34" stop-color="#52F5D0" stop-opacity="0.8" />
+                    <stop offset="1" stop-color="#A7FFE9" />
+                  </linearGradient>
+
+                  <linearGradient
+                    id="hero-shape-gradient"
+                    x1="268"
+                    y1="122"
+                    x2="434"
+                    y2="314"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#AEBCFF" />
+                    <stop offset="1" stop-color="#5474FF" />
+                  </linearGradient>
+
+                  <radialGradient
+                    id="hero-orb-gradient"
+                    cx="0"
+                    cy="0"
+                    r="1"
+                    gradientTransform="translate(350 241) rotate(90) scale(164)"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#3157F6" stop-opacity="0.23" />
+                    <stop offset="1" stop-color="#3157F6" stop-opacity="0" />
+                  </radialGradient>
+
+                  <filter id="hero-path-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="8" />
+                  </filter>
+                </defs>
+
+                <circle cx="350" cy="241" r="175" fill="url(#hero-orb-gradient)" />
+
+                <circle
+                  cx="350"
+                  cy="241"
+                  r="163"
+                  stroke="#71859A"
+                  stroke-opacity="0.15"
+                  stroke-dasharray="3 10"
+                />
+
+                <circle cx="350" cy="241" r="124" stroke="#71859A" stroke-opacity="0.11" />
+
+                <path
+                  d="M80 329C125 355 139 244 203 249C259 253 242 129 324 153"
+                  stroke="#52F5D0"
+                  stroke-opacity="0.28"
+                  stroke-width="15"
+                  stroke-linecap="round"
+                  filter="url(#hero-path-glow)"
+                />
+
+                <path
+                  class="showcase-trail"
+                  d="M80 329C125 355 139 244 203 249C259 253 242 129 324 153"
+                  stroke="url(#hero-gesture-gradient)"
+                  stroke-width="4.5"
+                  stroke-linecap="round"
+                />
+
+                <path
+                  d="M110 309C150 270 165 227 199 228"
+                  stroke="#52F5D0"
+                  stroke-opacity="0.22"
+                  stroke-width="1.4"
+                  stroke-dasharray="4 8"
+                />
+
+                <g class="showcase-main-shape">
+                  <circle
+                    cx="350"
+                    cy="241"
+                    r="85"
+                    fill="#3157F6"
+                    fill-opacity="0.075"
+                    stroke="url(#hero-shape-gradient)"
+                    stroke-width="3"
+                  />
+
+                  <circle
+                    cx="350"
+                    cy="241"
+                    r="97"
+                    stroke="#9AADFF"
+                    stroke-opacity="0.28"
+                    stroke-width="1"
+                    stroke-dasharray="5 9"
+                  />
+
+                  <path
+                    d="M350 136V148M350 334V346M245 241H257M443 241H455"
+                    stroke="#A4B5FF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+
+                  <circle cx="350" cy="144" r="4" fill="#9AADFF" />
+                  <circle cx="447" cy="241" r="4" fill="#9AADFF" />
+                  <circle cx="350" cy="338" r="4" fill="#9AADFF" />
+                  <circle cx="253" cy="241" r="4" fill="#9AADFF" />
+
+                  <path
+                    d="M330 242L344 256L372 227"
+                    stroke="#B9C5FF"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </g>
+
+                <g class="showcase-secondary-shape">
+                  <rect
+                    x="449"
+                    y="320"
+                    width="86"
+                    height="86"
+                    rx="17"
+                    transform="rotate(-17 449 320)"
+                    fill="#52F5D0"
+                    fill-opacity="0.055"
+                    stroke="#52F5D0"
+                    stroke-opacity="0.9"
+                    stroke-width="2.5"
+                  />
+
+                  <circle cx="448" cy="319" r="5" fill="#52F5D0" />
+                </g>
+
+                <g class="showcase-cursor">
+                  <circle
+                    cx="324"
+                    cy="153"
+                    r="29"
+                    fill="#52F5D0"
+                    fill-opacity="0.08"
+                    stroke="#52F5D0"
+                    stroke-opacity="0.35"
+                  />
+
+                  <circle
+                    cx="324"
+                    cy="153"
+                    r="15"
+                    fill="#52F5D0"
+                    fill-opacity="0.15"
+                    stroke="#52F5D0"
+                    stroke-width="1.5"
+                  />
+
+                  <circle cx="324" cy="153" r="5" fill="#C7FFF1" />
+                </g>
+
+                <g fill="#52F5D0">
+                  <circle cx="161" cy="175" r="2.5" opacity="0.7" />
+                  <circle cx="194" cy="154" r="1.8" opacity="0.4" />
+                  <circle cx="482" cy="151" r="2.2" opacity="0.6" />
+                  <circle cx="516" cy="218" r="1.8" opacity="0.4" />
+                </g>
+
+                <path
+                  d="M132 174H143M137.5 168.5V179.5M498 183H509M503.5 177.5V188.5"
+                  stroke="#8799A9"
+                  stroke-opacity="0.65"
+                  stroke-linecap="round"
+                />
+              </svg>
+
+              <div class="showcase-gesture-card">
+                <span class="gesture-card-icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M8 13V7a2 2 0 0 1 4 0v4" />
+                    <path d="M12 11V5a2 2 0 0 1 4 0v8" />
+                    <path
+                      d="M16 10a2 2 0 0 1 4 0v5c0 4-3 6-7 6h-2c-2 0-3.2-.7-4.3-2L4 15a2 2 0 0 1 3-2.6L9 15"
+                    />
+                  </svg>
+                </span>
+
+                <span class="gesture-card-copy">
+                  <small>YOUR HAND IS THE TOOL</small>
+                  <strong>Pinch to create</strong>
+                </span>
+              </div>
+
+              <div class="showcase-recognition">
+                <span class="recognition-icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="7" />
+                    <path d="M9 12.5 11 14.5 15.5 10" />
+                  </svg>
+                </span>
+
+                <span class="recognition-copy">
+                  <small>SHAPE RECOGNITION</small>
+                  <strong>Sketch to shape</strong>
+                </span>
+
+                <span class="recognition-check" aria-hidden="true">✓</span>
+              </div>
+
+              <div class="showcase-coordinate showcase-coordinate-bottom">
+                MOTION / FORM / INTERACTION
+              </div>
+            </div>
+
+            <div class="showcase-footer">
+              <span>
+                <span class="showcase-footer-dot" aria-hidden="true"></span>
+                FROM GESTURE TO CREATION
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-journey" aria-label="Three ways to create with Air2App">
+        <div class="journey-item">
+          <span class="journey-number">01</span>
+          <span class="journey-label">Draw in the air</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 16C8 4 13 20 20 8" />
+            <circle cx="20" cy="8" r="2" />
+          </svg>
+        </div>
+
+        <div class="journey-item">
+          <span class="journey-number">02</span>
+          <span class="journey-label">Recognize shapes</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="8" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </div>
+
+        <div class="journey-item">
+          <span class="journey-number">03</span>
+          <span class="journey-label">Bring them to life</span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4" />
+            <path d="m8 12 3 3 5-6" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-studio />
+
+  <app-how-it-works />
+</main>
