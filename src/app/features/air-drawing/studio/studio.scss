@@ -280,39 +280,45 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 52% 38%, rgba(49, 87, 246, 0.1), transparent 48%), var(--stage-deep);
-
-  > video,
-  > canvas {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-  }
-
-  > video {
-    z-index: 1;
-  }
-
-  > canvas {
-    pointer-events: none;
-  }
 }
 
-.drawing-layer {
+// Keep the camera and tracking overlay together.
+// This wrapper stays mounted while the Camera Mode is active.
+.camera-media {
+  position: absolute;
+  inset: 0;
+}
+
+// Preserve the existing full-screen layering and mirroring for now.
+.camera-media > video,
+.camera-media > .tracking-layer,
+.camera-surface > .drawing-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+.camera-media > video {
+  z-index: 1;
+}
+
+.camera-surface > .drawing-layer {
   z-index: 2;
 }
 
-.tracking-layer {
+.camera-media > .tracking-layer {
   z-index: 3;
 }
 
+// In Demo Mode, hide camera and drawing layers.
 .camera-surface.is-demo {
-  > video,
-  > .drawing-layer,
-  > .tracking-layer {
+  > .camera-media,
+  > .drawing-layer {
     display: none;
   }
 }

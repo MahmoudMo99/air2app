@@ -24,7 +24,7 @@ import { DemoStage } from './demo-stage/demo-stage';
 import { InteractionGuide } from './interaction-guide/interaction-guide';
 
 type InteractionMode = 'draw' | 'interact';
-
+type DisplayMode = 'canvas' | 'overlay';
 @Component({
   selector: 'app-studio',
   imports: [InteractionGuide, DemoStage, SceneEffects],
@@ -86,6 +86,8 @@ export class Studio implements OnDestroy {
   readonly error = signal('');
 
   readonly interactionMode = signal<InteractionMode>('draw');
+  readonly displayMode = signal<DisplayMode>('canvas');
+  readonly cameraPreviewVisible = signal(true);
   readonly waitingForRelease = signal(false);
   readonly hasTransformedObject = signal(false);
 
@@ -170,6 +172,8 @@ export class Studio implements OnDestroy {
       this.interaction.setTool('move');
 
       this.interactionMode.set('draw');
+      this.displayMode.set('canvas');
+      this.cameraPreviewVisible.set(true);
       this.waitingForRelease.set(false);
       this.hasTransformedObject.set(false);
       this.drawing.setSelectionVisible(false);
@@ -748,4 +752,26 @@ export class Studio implements OnDestroy {
 
     this.frameId = requestAnimationFrame(this.detectHands);
   };
+
+  setDisplayMode(mode: DisplayMode): void {
+    if (
+      !this.isRunning() ||
+      this.displayMode() === mode ||
+      this.isPinching() ||
+      this.isDragging() ||
+      this.waitingForRelease()
+    ) {
+      return;
+    }
+
+    this.displayMode.set(mode);
+  }
+
+  toggleCameraPreview(): void {
+    if (!this.isRunning()) {
+      return;
+    }
+
+    this.cameraPreviewVisible.update((visible) => !visible);
+  }
 }

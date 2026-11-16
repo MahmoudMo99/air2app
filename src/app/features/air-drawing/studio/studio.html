@@ -156,9 +156,13 @@
         </div>
 
         <div #cameraSurface class="camera-surface" [class.is-demo]="isDemo()">
-          <video #camera autoplay playsinline muted aria-hidden="true"></video>
+          <div class="camera-media" aria-hidden="true">
+            <video #camera autoplay playsinline muted></video>
+
+            <canvas #overlay class="tracking-layer"></canvas>
+          </div>
+
           <canvas #drawingCanvas class="drawing-layer" aria-label="Air drawing canvas"></canvas>
-          <canvas #overlay class="tracking-layer" aria-hidden="true"></canvas>
 
           @if (isDemo()) {
             <app-demo-stage [class.is-dragging]="isDragging()" (interactionEnded)="wakePhysics()" />
