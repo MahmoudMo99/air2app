@@ -279,46 +279,103 @@
   min-height: 590px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 52% 38%, rgba(49, 87, 246, 0.1), transparent 48%), var(--stage-deep);
+    radial-gradient(circle at 52% 38%, rgba(49, 87, 246, 0.1), transparent 48%),
+    var(--stage-deep);
 }
 
-// Keep the camera and tracking overlay together.
-// This wrapper stays mounted while the Camera Mode is active.
+// Overlay view keeps the existing camera / drawing / landmarks stacking.
+// In Canvas View the same live camera wrapper becomes a small preview.
 .camera-media {
   position: absolute;
   inset: 0;
 }
 
-// Preserve the existing full-screen layering and mirroring for now.
 .camera-media > video,
 .camera-media > .tracking-layer,
-.camera-surface > .drawing-layer {
+.camera-surface > .drawing-layer,
+.camera-surface > .cursor-layer {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1);
   pointer-events: none;
 }
 
-.camera-media > video {
-  z-index: 1;
-}
-
-.camera-surface > .drawing-layer {
-  z-index: 2;
-}
-
+.camera-media > video,
 .camera-media > .tracking-layer {
-  z-index: 3;
+  transform: scaleX(-1);
 }
 
-// In Demo Mode, hide camera and drawing layers.
+// Drawing and effects now use unmirrored scene coordinates.
+// Mirroring is applied once by gesture-coordinate-mapper.ts.
+.camera-surface > .drawing-layer,
+.camera-surface > .cursor-layer {
+  transform: none;
+}
+
+.camera-media > video { z-index: 1; }
+.camera-surface > .drawing-layer { z-index: 2; }
+.camera-media > .tracking-layer { z-index: 3; }
+.camera-surface > .cursor-layer { z-index: 5; }
+
+.camera-surface.is-overlay-view > .cursor-layer { display: none; }
+
+.camera-surface.is-canvas-view {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(49,87,246,.10), transparent 55%),
+    linear-gradient(rgba(151,179,196,.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(151,179,196,.038) 1px, transparent 1px),
+    var(--stage-deep);
+  background-size: auto, 36px 36px, 36px 36px, auto;
+
+  > .drawing-layer,
+  > .cursor-layer {
+    object-fit: contain;
+  }
+
+  > .camera-media {
+    z-index: 8;
+    inset: auto auto 18px 18px;
+    width: clamp(150px, 25%, 232px);
+    height: auto;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid rgba(154, 173, 255, 0.55);
+    border-radius: 12px;
+    background: #0b141b;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .4);
+    transition: opacity .2s ease;
+
+    &::after {
+      content: 'CAMERA LIVE';
+      position: absolute;
+      z-index: 4;
+      top: 8px;
+      left: 8px;
+      padding: 4px 6px;
+      border-radius: 5px;
+      background: rgba(11,20,27,.78);
+      color: #c7fff0;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: .07em;
+      pointer-events: none;
+    }
+  }
+}
+
+.camera-surface.is-canvas-view.is-preview-hidden > .camera-media {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .camera-surface.is-demo {
   > .camera-media,
-  > .drawing-layer {
+  > .drawing-layer,
+  > .cursor-layer {
     display: none;
   }
 }
@@ -716,7 +773,8 @@
   min-width: 0;
 }
 
-.physics-toggle {
+.physics-toggle,
+.fullscreen-display-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1084,6 +1142,70 @@
   }
 }
 
+.display-deck {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+
+.display-deck-title {
+  margin-bottom: 9px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .07em;
+}
+
+.display-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.display-mode-switch button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+
+  &.is-active { color: white; background: #3157f6; }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.camera-preview-toggle {
+  margin-top: 10px;
+  padding: 4px 0;
+  border: 0;
+  color: var(--accent);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+}
+
+.camera-preview-note {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .stage-shell:fullscreen,
 .stage-shell.is-fullscreen-fallback {
   display: flex;
@@ -1164,6 +1286,8 @@
 }
 
 @media (max-width: 1160px) {
+  .display-deck { grid-column: 1 / -1; }
+
   .studio-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1310,6 +1434,13 @@
 }
 
 @media (max-width: 640px) {
+  .camera-surface.is-canvas-view > .camera-media {
+    width: clamp(135px, 38%, 170px);
+    inset: auto auto 12px 12px;
+  }
+
+  .display-deck { margin-top: 14px; }
+
   .studio-layout {
     gap: 13px;
   }
@@ -1599,6 +1730,8 @@
     animation: none;
   }
 
+  .display-mode-switch button,
+  .camera-media,
   .fullscreen-toggle,
   .stage-quick-clear,
   .end-session,
@@ -1608,6 +1741,54 @@
   .physics-toggle,
   .transform-tool,
   .clear-button {
+    transition: none;
+  }
+}
+
+
+// Camera Preview: 320px standard / 232px compact (desktop).
+.camera-surface.is-canvas-view > .camera-media {
+  width: min(320px, calc(100% - 36px));
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.camera-surface.is-canvas-view.is-preview-compact > .camera-media {
+  width: min(232px, calc(100% - 36px));
+}
+
+.camera-surface.is-canvas-view > .camera-media > .camera-preview-size-toggle {
+  position: absolute;
+  z-index: 5;
+  top: 7px;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(191, 210, 224, 0.4);
+  border-radius: 7px;
+  background: rgba(11, 20, 27, 0.82);
+  color: #eff7f8;
+  cursor: pointer;
+  pointer-events: auto;
+
+  svg { width: 15px; height: 15px; }
+  &:hover { background: rgba(49, 87, 246, 0.85); }
+  &:focus-visible { outline: 2px solid #b5c2ff; outline-offset: 2px; }
+}
+
+@media (max-width: 640px) {
+  .camera-surface.is-canvas-view > .camera-media {
+    width: min(200px, calc(100% - 24px));
+  }
+  .camera-surface.is-canvas-view.is-preview-compact > .camera-media {
+    width: min(160px, calc(100% - 24px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camera-surface.is-canvas-view > .camera-media {
     transition: none;
   }
 }

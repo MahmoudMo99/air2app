@@ -155,14 +155,42 @@
           </div>
         </div>
 
-        <div #cameraSurface class="camera-surface" [class.is-demo]="isDemo()">
-          <div class="camera-media" aria-hidden="true">
-            <video #camera autoplay playsinline muted></video>
+        <div #cameraSurface class="camera-surface"
+          [class.is-demo]="isDemo()"
+          [class.is-canvas-view]="isRunning() && displayMode() === 'canvas'"
+          [class.is-overlay-view]="isRunning() && displayMode() === 'overlay'"
+          [class.is-preview-hidden]="!cameraPreviewVisible()"
+          [class.is-preview-compact]="cameraPreviewCompact()">
+          <div class="camera-media">
+            <video #camera autoplay playsinline muted aria-hidden="true"></video>
 
-            <canvas #overlay class="tracking-layer"></canvas>
+            <canvas #overlay class="tracking-layer" aria-hidden="true"></canvas>
+
+            @if (isRunning() && displayMode() === 'canvas' && cameraPreviewVisible()) {
+              <button
+                type="button"
+                class="camera-preview-size-toggle"
+                (click)="toggleCameraPreviewSize()"
+                [attr.aria-label]="cameraPreviewCompact() ? 'Expand camera preview' : 'Shrink camera preview'"
+                [attr.title]="cameraPreviewCompact() ? 'Expand preview' : 'Shrink preview'"
+              >
+                @if (cameraPreviewCompact()) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M8 3H3v5M16 21h5v-5M3 3l7 7M21 21l-7-7" />
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 10H4V4M14 14h6v6M4 4l6 6M20 20l-6-6" />
+                  </svg>
+                }
+              </button>
+            }
           </div>
 
           <canvas #drawingCanvas class="drawing-layer" aria-label="Air drawing canvas"></canvas>
+          <canvas #cursorCanvas class="cursor-layer" aria-hidden="true"></canvas>
 
           @if (isDemo()) {
             <app-demo-stage [class.is-dragging]="isDragging()" (interactionEnded)="wakePhysics()" />
@@ -171,7 +199,8 @@
           @if (isActive()) {
             <app-scene-effects
               [referenceCanvas]="isRunning() ? drawingCanvas : null"
-              [mirrored]="isRunning()"
+              [mirrored]="false"
+              [class.is-canvas-view]="isRunning() && displayMode() === 'canvas'"
               [ambientEnabled]="!physicsEnabled() && (isDemo() || !isPinching())"
               [physicsActive]="
                 physicsEnabled() &&
@@ -505,6 +534,20 @@
           </div>
 
           <div class="stage-footer-actions">
+            @if (isFullscreen() && isRunning()) {
+              <button type="button" class="fullscreen-display-toggle"
+                [disabled]="isPinching() || isDragging() || waitingForRelease()"
+                (click)="setDisplayMode(displayMode() === 'canvas' ? 'overlay' : 'canvas')">
+                {{ displayMode() === 'canvas' ? 'Camera Overlay' : 'Canvas View' }}
+              </button>
+              @if (displayMode() === 'canvas') {
+                <button type="button" class="fullscreen-display-toggle"
+                  (click)="toggleCameraPreview()">
+                  {{ cameraPreviewVisible() ? 'Hide preview' : 'Show preview' }}
+                </button>
+              }
+            }
+
             @if (isActive()) {
               <button
                 type="button"
@@ -586,6 +629,30 @@
         <div class="panel-topline">
           <span>THE CONTROL DECK</span>
         </div>
+
+        @if (isRunning()) {
+          <div class="display-deck" aria-label="Camera display settings">
+            <div class="display-deck-title">DISPLAY VIEW</div>
+            <div class="display-mode-switch" role="group" aria-label="Drawing display mode">
+              <button type="button" [class.is-active]="displayMode() === 'canvas'"
+                [attr.aria-pressed]="displayMode() === 'canvas'"
+                [disabled]="isPinching() || isDragging() || waitingForRelease()"
+                (click)="setDisplayMode('canvas')">Canvas</button>
+              <button type="button" [class.is-active]="displayMode() === 'overlay'"
+                [attr.aria-pressed]="displayMode() === 'overlay'"
+                [disabled]="isPinching() || isDragging() || waitingForRelease()"
+                (click)="setDisplayMode('overlay')">Camera Overlay</button>
+            </div>
+            @if (displayMode() === 'canvas') {
+              <button class="camera-preview-toggle" type="button"
+                [attr.aria-pressed]="cameraPreviewVisible()"
+                (click)="toggleCameraPreview()">
+                {{ cameraPreviewVisible() ? 'Hide camera preview' : 'Show camera preview' }}
+              </button>
+              <p class="camera-preview-note">The camera stays active while its preview is hidden.</p>
+            }
+          </div>
+        }
 
         <div class="panel-intro">
           <span class="panel-intro-label">

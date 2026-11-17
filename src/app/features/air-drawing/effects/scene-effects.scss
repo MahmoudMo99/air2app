@@ -18,3 +18,8 @@
 .effects-canvas.is-mirrored {
   transform: scaleX(-1);
 }
+
+// Keep effects aligned with the contain-fitted drawing in Canvas View.
+:host(.is-canvas-view) .effects-canvas {
+  object-fit: contain;
+}

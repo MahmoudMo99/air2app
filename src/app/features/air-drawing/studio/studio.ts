@@ -10,6 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { DrawingEngineService } from '../drawing-engine.service';
+import { mapGestureToCanvas } from '../gesture-coordinate-mapper';
+import type { GestureFrame } from '../drawing.models';
 import { LivingObjectsMotion } from '../effects/living-objects.motion';
 import { SceneEffects } from '../effects/scene-effects';
 import { HandTrackingService } from '../hand-tracking.service';
@@ -51,6 +53,9 @@ export class Studio implements OnDestroy {
   @ViewChild('overlay')
   private overlayRef!: ElementRef<HTMLCanvasElement>;
 
+  @ViewChild('cursorCanvas')
+  private cursorRef!: ElementRef<HTMLCanvasElement>;
+
   @ViewChild('stageShell')
   private stageRef!: ElementRef<HTMLElement>;
 
@@ -88,6 +93,7 @@ export class Studio implements OnDestroy {
   readonly interactionMode = signal<InteractionMode>('draw');
   readonly displayMode = signal<DisplayMode>('canvas');
   readonly cameraPreviewVisible = signal(true);
+  readonly cameraPreviewCompact = signal(false);
   readonly waitingForRelease = signal(false);
   readonly hasTransformedObject = signal(false);
 
@@ -174,6 +180,7 @@ export class Studio implements OnDestroy {
       this.interactionMode.set('draw');
       this.displayMode.set('canvas');
       this.cameraPreviewVisible.set(true);
+      this.cameraPreviewCompact.set(false);
       this.waitingForRelease.set(false);
       this.hasTransformedObject.set(false);
       this.drawing.setSelectionVisible(false);
@@ -271,6 +278,11 @@ export class Studio implements OnDestroy {
 
     if (overlay) {
       overlay.getContext('2d')?.clearRect(0, 0, overlay.width, overlay.height);
+    }
+
+    const cursorCanvas = this.cursorRef?.nativeElement;
+    if (cursorCanvas) {
+      cursorCanvas.getContext('2d')?.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
     }
 
     this.resetPhysics();
@@ -565,7 +577,7 @@ export class Studio implements OnDestroy {
       height: canvas.height,
     };
 
-    if (!this.isFullscreen()) {
+    if (!this.isFullscreen() || this.displayMode() === 'canvas') {
       return viewport;
     }
 
@@ -662,6 +674,45 @@ export class Studio implements OnDestroy {
     this.wakePhysics();
   }
 
+  private renderGestureCursor(gesture: GestureFrame): void {
+    const canvas = this.cursorRef?.nativeElement;
+    const reference = this.drawingRef?.nativeElement;
+    if (!canvas || !reference || !reference.width || !reference.height) return;
+
+    if (canvas.width !== reference.width || canvas.height !== reference.height) {
+      canvas.width = reference.width;
+      canvas.height = reference.height;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (this.displayMode() !== 'canvas' || this.waitingForRelease() || !gesture.cursor) return;
+
+    const x = gesture.cursor.x * canvas.width;
+    const y = gesture.cursor.y * canvas.height;
+    const active = gesture.active;
+    const color = active ? '#52f5d0' : '#b6a4ff';
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, active ? 13 : 9, 0, Math.PI * 2);
+    ctx.fillStyle = active ? 'rgba(82,245,208,0.20)' : 'rgba(182,164,255,0.20)';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = active ? 20 : 10;
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
   private detectHands = (): void => {
     if (!this.isRunning() || this.destroyed) {
       return;
@@ -689,6 +740,8 @@ export class Studio implements OnDestroy {
           const hand = hands[0];
 
           const gesture = this.gesture.update(hand, now);
+          const canvasGesture = mapGestureToCanvas(gesture);
+          this.renderGestureCursor(canvasGesture);
 
           this.handCount.set(hands.length);
           this.isPinching.set(gesture.active);
@@ -704,8 +757,8 @@ export class Studio implements OnDestroy {
               this.drawing.beginStroke();
             }
 
-            if ((gesture.action === 'start' || gesture.action === 'draw') && gesture.cursor) {
-              this.drawing.draw(gesture.cursor.x, gesture.cursor.y);
+            if ((gesture.action === 'start' || gesture.action === 'draw') && canvasGesture.cursor) {
+              this.drawing.draw(canvasGesture.cursor.x, canvasGesture.cursor.y);
             }
 
             if (gesture.action === 'end') {
@@ -720,7 +773,8 @@ export class Studio implements OnDestroy {
           } else {
             const wasDragging = this.isDragging();
 
-            const changed = this.interaction.handle(gesture, video.videoWidth, video.videoHeight);
+            const canvas = this.drawingRef.nativeElement;
+            const changed = this.interaction.handle(canvasGesture, canvas.width, canvas.height);
 
             if (changed && gesture.action === 'draw' && this.isDragging()) {
               this.hasTransformedObject.set(true);
@@ -765,6 +819,11 @@ export class Studio implements OnDestroy {
     }
 
     this.displayMode.set(mode);
+  }
+
+  toggleCameraPreviewSize(): void {
+    if (!this.isRunning() || this.displayMode() !== 'canvas') return;
+    this.cameraPreviewCompact.update((compact) => !compact);
   }
 
   toggleCameraPreview(): void {
